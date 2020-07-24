@@ -1,4 +1,4 @@
-package com.brodaywalker.ca-strategy;
+package com.brodaywalker.ca_strategy;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
