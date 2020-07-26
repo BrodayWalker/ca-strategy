@@ -3,11 +3,17 @@ package com.brodaywalker.ca_strategy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.io.IOError;
+import java.io.IOException;
 import java.lang.Math;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 
 class Model {
-    private int padSize, dim, effectiveDim, initialInfectious, pop,
-                countSusceptible, countLatent, countInfectious, countRecovered;
+    private int padSize, dim, effectiveDim, initialInfectious, pop, daysLatent, 
+                daysInfectious, countSusceptible, countLatent, countInfectious, 
+                countRecovered;
+    private double chanceToInfect;
     private List<List<Model.Cell>> grid, copyGrid;
     private Strategy strategy;
 
@@ -37,15 +43,24 @@ class Model {
         // this is the dimension of the square with the border added in
         this.effectiveDim = this.dim + this.padSize + this.padSize; 
         this.initialInfectious = 1;
+        this.daysLatent = 1;
+        this.daysInfectious = 1;
+        //
+        //
+        this.chanceToInfect = 1.0;
+        //
+        //
         // The default strategy surveys the Moore neighborhood
-        this.strategy = new Moore();
+        this.strategy = new Moore(this.daysLatent, this.daysInfectious, this.chanceToInfect);
 
         buildGrid();
-        setInitialInfectious(this.initialInfectious);
+        setInitialInfectious();
+        copyGridDeep();
         updateStatistics();
     }
 
-    Model(int pop, boolean pad, Strategy strat) {
+    Model(int pop, int initialInfectious, int daysLatent, int daysInfectious, 
+        double chanceToInfect, boolean pad, Strategy strat) {
         // Padding will probably always be used, but give the option
         // to not use it 
         if (pad) {
@@ -55,12 +70,27 @@ class Model {
             this.padSize = 0;
         }
         
+        // Grid parameters
         this.pop = pop;
         this.dim = (int)Math.sqrt(pop);
         this.effectiveDim = this.dim + this.padSize + this.padSize;
+
+        // Population parameters
+        this.initialInfectious = initialInfectious;
+        this.daysLatent = daysLatent;
+        this.daysInfectious = daysInfectious;
+        this.chanceToInfect = chanceToInfect;
+
+        // Strategy parameters
         this.strategy = strat;
-        
+        // This could be set in the Model arguments instead
+        this.strategy.setDaysLatent(this.daysLatent);
+        this.strategy.setDaysInfectious(this.daysInfectious);
+        this.strategy.setChanceInfected(this.chanceToInfect);
+
         buildGrid();
+        setInitialInfectious();
+        copyGridDeep();
         updateStatistics();
     }
 
@@ -75,7 +105,8 @@ class Model {
         this.copyGrid = new ArrayList<List<Model.Cell>>(this.effectiveDim);
 
         // For this reason, we must traverse the first dimension and put lists in each element
-        // And, of course, those lists are of size this.effectiveDim, but the elements are also empty
+        // And, of course, those lists are of size this.effectiveDim, 
+        // but the elements are also empty
         for(int i = 0; i < this.effectiveDim; i++) {
             this.grid.add(new ArrayList<Model.Cell>(this.effectiveDim));
             this.copyGrid.add(new ArrayList<Model.Cell>(this.effectiveDim));
@@ -90,14 +121,14 @@ class Model {
         }
     }
 
-    private void setInitialInfectious(int countInitial) {
-        Random rand = new Random();
-        int j, k;
+    private void setInitialInfectious() {
+        Random rand = new Random(); // random number generator
+        int j, k; // used for random index
 
         // Make sure the initial count of infectious cells does not exceed
         // the size of the grid
-        if (countInitial <= this.pop) {
-            for(int i = 0; i < countInitial; i++) {
+        if (this.initialInfectious <= this.pop) {
+            for(int i = 0; i < this.initialInfectious; i++) {
                 // Choose a random cell object in the grid
                 // If this cell is already infectious, continue to roll random
                 // numbers until a 
@@ -136,8 +167,8 @@ class Model {
     private void copyGridDeep() {
         for(int i = this.padSize; i < this.effectiveDim - this.padSize; i++) {
             for(int j = this.padSize; j < this.effectiveDim - this.padSize; j++) {
-                this.copyGrid.get(i).get(j).phase = grid.get(i).get(j).phase;
-                this.copyGrid.get(i).get(j).daysInPhase = grid.get(i).get(j).daysInPhase;
+                this.copyGrid.get(i).get(j).setPhase(this.grid.get(i).get(j).phase);
+                this.copyGrid.get(i).get(j).setDaysInPhase(this.grid.get(i).get(j).daysInPhase);
             }
         }
     }
@@ -171,8 +202,13 @@ class Model {
         this.countRecovered = counts[Phase.RECOVERED.ordinal()];
     }
 
+    private void writeStatistics(BufferedWriter writer) throws IOException {
+        writer.append(this.countSusceptible + ", " + this.countLatent + ", " + 
+                      this.countInfectious + ", " + this.countRecovered + '\n');
+    }
+
     // Print the grid
-    public void printGrid() {
+    public void printGrid(List<List<Model.Cell>> grid) {
         for(int i = this.padSize; i < this.effectiveDim - this.padSize; i++) {
             for(int j = this.padSize; j < this.effectiveDim - this.padSize; j++) {
                 // This is ugly because Java does not support operator overloading,
@@ -187,7 +223,7 @@ class Model {
     public void printPhase() {
         for(int i = this.padSize; i < this.effectiveDim - this.padSize; i++) {
             for(int j = this.padSize; j < this.effectiveDim - this.padSize; j++) {
-                System.out.print(grid.get(i).get(j).phase.ordinal() + " ");
+                System.out.print(this.grid.get(i).get(j).phase.ordinal() + " ");
             }
             System.out.print('\n');
         }
@@ -197,7 +233,7 @@ class Model {
     public void printDaysInPhase() {
         for(int i = this.padSize; i < this.effectiveDim - this.padSize; i++) {
             for(int j = this.padSize; j < this.effectiveDim - this.padSize; j++) {
-                System.out.print(grid.get(i).get(j).daysInPhase + " ");
+                System.out.print(this.grid.get(i).get(j).daysInPhase + " ");
             }
             System.out.print('\n');
         }
@@ -216,20 +252,39 @@ class Model {
     }
 
     // Run the model without printing any diagnostic/debug information
-    public void defaultRun() {
-        while(this.countLatent != 0 && this.countInfectious != 0) {
+    public void defaultRun() throws IOException {
+        // Create a buffered writer to write statistics to
+        BufferedWriter writer = new BufferedWriter(new FileWriter("output.csv"));
+        writeStatistics(writer);
+
+        while(this.countLatent > 0 || this.countInfectious > 0) {
             simulateDay();
+            writeStatistics(writer);
         }
+
+        writer.close();
     }
 
     // Run the model, printing the grid for each day
-    public void debugRun() {
+    public void debugRun() throws IOException {
+        int countDays = 0;
+        // Create a buffered writer to write statistics to
+        BufferedWriter writer = new BufferedWriter(new FileWriter("output.csv"));
+
+        System.out.println("DAY " + countDays);
+
+        writeStatistics(writer);
         printPhase();
 
-        while(this.countLatent != 0 && this.countInfectious != 0) {
+        while(this.countLatent > 0 || this.countInfectious > 0) {
             simulateDay();
+            writeStatistics(writer);
+
+            System.out.println("DAY " + ++countDays);
             printPhase();
         }
+
+        writer.close();
     }
 }
 

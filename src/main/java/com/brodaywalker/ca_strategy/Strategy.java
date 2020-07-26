@@ -5,4 +5,10 @@ import java.util.List;
 interface Strategy {
     public void doLogic(int padSize, int dim, int effectiveDim, 
         List<List<Model.Cell>> grid, List<List<Model.Cell>> copyGrid);
+
+    public void setDaysLatent(int days);
+    
+    public void setDaysInfectious(int days);
+
+    public void setChanceInfected(double chance);
 }
