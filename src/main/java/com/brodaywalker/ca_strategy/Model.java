@@ -3,7 +3,6 @@ package com.brodaywalker.ca_strategy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.io.IOError;
 import java.io.IOException;
 import java.lang.Math;
 import java.io.BufferedWriter;
