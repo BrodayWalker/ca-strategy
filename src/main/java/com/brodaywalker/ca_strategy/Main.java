@@ -126,6 +126,7 @@ class Main {
             }
         } while (!answer.equals("y") && !answer.equals("n"));
         
+        scanner.close();
         return customModel;
     }
 }
