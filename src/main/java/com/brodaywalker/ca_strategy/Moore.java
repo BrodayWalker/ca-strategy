@@ -39,7 +39,7 @@ class Moore implements Strategy {
                     int localInfectious = 0;
 
                     // First, count the number of infectious in the neighborhood
-                    // surround this cell. This cell is the center of a 3x3 submatrix
+                    // surrounding this cell. This cell is the center of a 3x3 submatrix
                     for(int x = 0; x < 3; x++) {
                         for(int y = 0; y < 3; y++) {
                             if(copyGrid.get(i + x - padSize).get(j + y - padSize).phase == Phase.INFECTIOUS) {
