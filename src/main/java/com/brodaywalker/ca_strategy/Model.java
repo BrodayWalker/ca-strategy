@@ -56,8 +56,8 @@ class Model {
      */
     Model() {
         this.padSize = 1; // specifies a 1-cell border around the usable cells
-        this.dim = 10; // specifies that we want a 10 x 10 grid of usable cells
-        this.pop = 100;
+        this.dim = 50; // specifies that we want a 50 x 50 grid of usable cells
+        this.pop = 2500;
         // this is the dimension of the square with the border added in
         this.effectiveDim = this.dim + this.padSize + this.padSize; 
         this.initialInfectious = 1;
@@ -111,7 +111,7 @@ class Model {
 
         // Strategy parameters
         this.strategy = strat;
-        // This could be set in the Model arguments instead
+        // This could be set when the Strategy subtype is created in the Model arguments instead
         this.strategy.setDaysLatent(this.daysLatent);
         this.strategy.setDaysInfectious(this.daysInfectious);
         this.strategy.setChanceInfected(this.chanceToInfect);
