@@ -8,6 +8,19 @@ import java.lang.Math;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 
+/**
+ * <p>
+ * The Model class is responsible for holding all model parameters as well as
+ * the cellular automaton grid. The model grid is a two-dimensional array of
+ * cell objects, which hold two pieces of information: which phase the cell
+ * is in and how many days it has been in that phase.
+ * </p>
+ * 
+ * <p>
+ * All logic acting on the grid is contained in an object that implements the
+ * Strategy interface. 
+ * </p>
+ */
 class Model {
     private int padSize, dim, effectiveDim, initialInfectious, pop, daysLatent, 
                 daysInfectious, countSusceptible, countLatent, countInfectious, 
@@ -35,6 +48,12 @@ class Model {
         }
     }
 
+    /**
+     * The default constructor sets all parameters automatically, handles the creation
+     * of the CA grid, and creates a new Moore object, which is the default strategy.
+     * 
+     * TODO: read initial parameters from config file
+     */
     Model() {
         this.padSize = 1; // specifies a 1-cell border around the usable cells
         this.dim = 10; // specifies that we want a 10 x 10 grid of usable cells
@@ -46,7 +65,7 @@ class Model {
         this.daysInfectious = 1;
         //
         //
-        this.chanceToInfect = 1.0;
+        this.chanceToInfect = 0.3;
         //
         //
         // The default strategy surveys the Moore neighborhood
@@ -58,6 +77,16 @@ class Model {
         updateStatistics();
     }
 
+    /**
+     * This optional constructor allows all parameters to be set manually.
+     * @param pop - The target population
+     * @param initialInfectious - Number of cells which start as infectious
+     * @param daysLatent - Number of days a cell stays in the latent phase
+     * @param daysInfectious - Number of days a cell remains in the infectious phase
+     * @param chanceToInfect - How likely an infectious cell is to infect a susceptible cell
+     * @param pad - Surround the 2D grid with a border of susceptible cells?
+     * @param strat - The logic flavor to be applied
+     */
     Model(int pop, int initialInfectious, int daysLatent, int daysInfectious, 
         double chanceToInfect, boolean pad, Strategy strat) {
         // Padding will probably always be used, but give the option
@@ -93,7 +122,11 @@ class Model {
         updateStatistics();
     }
 
-    // This builds both the grid and copy
+    /**
+     * Builds two ArrayLists of Lists of Cell objects: the original and a copy for
+     * use when performing logic to ensure no intermediate results affect surrounding
+     * cells.
+     */
     private void buildGrid() {
         // A nice resource for building 2D Lists/ArrayLists in Java
         // https://stackoverflow.com/questions/16956720/how-to-create-an-2d-arraylist-in-java
@@ -120,6 +153,10 @@ class Model {
         }
     }
 
+    /**
+     * Creates this.initialInfectious infected individual cells before the
+     * SLIR model begins running. Cells are selected at random.
+     */
     private void setInitialInfectious() {
         Random rand = new Random(); // random number generator
         int j, k; // used for random index
@@ -153,16 +190,21 @@ class Model {
         }
     }
 
-    // Using the strategy design pattern, different logic can be swapped in and out easily
-    // The default logic uses the Moore neighborhood, but the Model object may be instantiated
-    // with a von Neumann strategy if selected by the user. Either way, the code doesn't care
-    // because every strategy implements the Strategy interface, so the doLogic method in the
-    // appropriate concrete class is executed.
+    /**
+     * Using the strategy design pattern, different logic can be swapped in and out easily
+     * The default logic uses the Moore neighborhood, but the Model object may be instantiated
+     * with a von Neumann strategy if selected by the user. Either way, the code doesn't care
+     * because every strategy implements the Strategy interface, so the doLogic method in the
+     * appropriate concrete class is executed.
+     */
     private void performLogic() {
         this.strategy.doLogic(this.padSize, this.dim, this.effectiveDim, this.grid, this.copyGrid);
     }
 
-    // Copy the original board 
+    /**
+     * Performs a deep copy from this.grid to this.copyGrid. There are only two variables to
+     * copy: phase and daysInPhase.
+     */ 
     private void copyGridDeep() {
         for(int i = this.padSize; i < this.effectiveDim - this.padSize; i++) {
             for(int j = this.padSize; j < this.effectiveDim - this.padSize; j++) {
@@ -172,6 +214,10 @@ class Model {
         }
     }
 
+    /**
+     * Traverses the grid counting the number of cells in each phase of the SLIR model.
+     * Updates countSusceptible, countLatent, countInfectious, and countRecovered.
+     */
     private void updateStatistics() {
         // Create an array that is the same size as the enumerated list in Phase
         // For this model, the counts array is 4 elements, each corresponding to a phase
@@ -201,11 +247,24 @@ class Model {
         this.countRecovered = counts[Phase.RECOVERED.ordinal()];
     }
 
+    
+    /** 
+     * The writeStatistics method is used to write the number of cells in
+     * each phase of the SLIR model to a file.
+     * @param writer
+     * @throws IOException
+     */
     private void writeStatistics(BufferedWriter writer) throws IOException {
         writer.append(this.countSusceptible + ", " + this.countLatent + ", " + 
                       this.countInfectious + ", " + this.countRecovered + '\n');
     }
 
+    
+    /** 
+     * printGrid is used to print any 2D grid of Model.Cell objects. This can be
+     * used for debugging or display purposes.
+     * @param grid
+     */
     // Print the grid
     public void printGrid(List<List<Model.Cell>> grid) {
         for(int i = this.padSize; i < this.effectiveDim - this.padSize; i++) {
@@ -219,6 +278,10 @@ class Model {
         }
     }
 
+    /**
+     * Prints a 2D matrix of integers corresponding to each cell's phase. This
+     * is primarily a debugging feature.
+     */
     public void printPhase() {
         for(int i = this.padSize; i < this.effectiveDim - this.padSize; i++) {
             for(int j = this.padSize; j < this.effectiveDim - this.padSize; j++) {
@@ -229,6 +292,10 @@ class Model {
         System.out.print('\n');
     }
 
+    /**
+     * Prints a 2D matrix of integers corresponding to each cell's count of days 
+     * in the current phase. This is primarily a debugging feature.
+     */
     public void printDaysInPhase() {
         for(int i = this.padSize; i < this.effectiveDim - this.padSize; i++) {
             for(int j = this.padSize; j < this.effectiveDim - this.padSize; j++) {
@@ -239,7 +306,18 @@ class Model {
         System.out.print('\n');
     }
 
-    // Performs game logic and changing of cells from phase to phase
+    /**
+     * <p>
+     * Performs game logic and changing of cells from phase to phase. This should
+     * be wrapped by a method that controls the exit conditions of the simulation.
+     * </p>
+     * 
+     * Logical flow:
+     * 1. copy previous day's grid
+     * 2. perform logic on the grid; this logic is fully contained in a
+     * concrete class that implements Strategy
+     * 3. update the object's counts for each phase
+     */
     public void simulateDay() {
         // while countLatent != 0 and countInfectious != 0
         // clone the board
@@ -250,6 +328,14 @@ class Model {
         updateStatistics();
     }
 
+    
+    /** 
+     * defaultRun() wraps the simulateDay() method. When using defaultRun to
+     * run the model, each day's statistics are written to a file, but
+     * the grid will not be printed. Use debugRun() to see each individual
+     * day's grid.
+     * @throws IOException
+     */
     // Run the model without printing any diagnostic/debug information
     public void defaultRun() throws IOException {
         // Create a buffered writer to write statistics to
@@ -264,6 +350,12 @@ class Model {
         writer.close();
     }
 
+    
+    /** 
+     * debugRun() wraps the simulateDay() method. Each day's SLIR statistics are
+     * written to a file and each day's grid is printed to the console.
+     * @throws IOException
+     */
     // Run the model, printing the grid for each day
     public void debugRun() throws IOException {
         int countDays = 0;
@@ -285,5 +377,17 @@ class Model {
 
         writer.close();
     }
+
+    public int getPadSize() { return this.padSize; }
+    public int getDim() { return this.dim; }
+    public int getEffectiveDim() { return this.dim; }
+    public int getInitialInfectious() { return this.initialInfectious; }
+    public int getPopulation() { return this.pop; }
+    public int getDaysLatent() { return this.daysLatent; }
+    public int getDaysInfectious() { return this.daysInfectious; }
+    public int getCountSusceptible() { return this.countSusceptible; }
+    public int getCountLatent() { return this.countLatent; }
+    public int getCountInfectious() { return this.countInfectious; }
+    public int getCountRecovered() { return this.countRecovered; }
 }
 

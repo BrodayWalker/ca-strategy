@@ -3,6 +3,11 @@ package com.brodaywalker.ca_strategy;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * The Moore class implements the Strategy interface. The Moore class
+ * surveys a cell's Moore neighborhood (the 8 surrounding cells) when
+ * performing logic to update a cell's phase. 
+ */
 class Moore implements Strategy {
     private int daysLatent, daysInfectious;
     private double chanceInfected;
@@ -19,6 +24,13 @@ class Moore implements Strategy {
         this.chanceInfected = chanceInfected;
     }
 
+    /** 
+     * @param padSize
+     * @param dim
+     * @param effectiveDim
+     * @param grid
+     * @param copyGrid
+     */
     public void doLogic(int padSize, int dim, int effectiveDim, 
         List<List<Model.Cell>> grid, List<List<Model.Cell>> copyGrid) {
         

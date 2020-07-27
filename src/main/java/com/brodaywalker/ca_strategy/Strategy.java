@@ -2,7 +2,10 @@ package com.brodaywalker.ca_strategy;
 
 import java.util.List;
 
-// TODO: this should probably just be a base class rather than an interface
+/**
+ * Each class performing logic on a Model object's 2D grid must implement
+ * Strategy. 
+ */
 interface Strategy {
     public void doLogic(int padSize, int dim, int effectiveDim, 
         List<List<Model.Cell>> grid, List<List<Model.Cell>> copyGrid);

@@ -1,9 +1,46 @@
+/*
+* Broday Walker
+* Dr. Johnson
+* CMPS 5323 - Computational Epidemiology
+* July 28, 2020
+*
+* This program implements a cellular automaton SLIR model using the Strategy design pattern.
+* With this pattern, logic is customizable and easily swapped/replaced at runtime based
+* on the user's input. Two modes are included: the Moore neighborhood and the von Neumann
+* neighborhood. More strategies can be added simply by creating a concrete class which
+* implements the Strategy interface.
+*
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* How to build/run:
+* VSCode:
+*   Option 1: press either Run | Debug button above the main method (if supported)
+*   Option 2: 
+*
+* Maven:
+*   1. Open terminal
+*   2. Navigate to root folder of this project
+*   3. Run the following command to build the project: mvn package
+*   4. Locate ca_strategy-1.0-SNAPSHOT.jar in target/
+*   5. (Windows Command Line) java -jar <path_to_jar>\ca_strategy-1.0-SNAPSHOT.jar 
+*
+* Windows Command Line with included .jar:
+*   1. Open terminal
+*   2. Locate ca_strategy-1.0-SNAPSHOT.jar in target/
+*   3. java -jar <path_to_jar>\ca_strategy-1.0-SNAPSHOT.jar
+*/
+
 package com.brodaywalker.ca_strategy;
 
 import java.io.IOException;
 import java.util.Scanner;
 
 class Main {
+    
+    /** 
+     * Main invokes methods for displaying the menu and running the model 
+     * created by the user.
+     * @param args[] 
+     */
     public static void main(String args[]){
         // 1. Show the menu
         // 2. Run the model
@@ -19,6 +56,13 @@ class Main {
         System.out.println("Model run complete. Check output.csv in the root folder for results.");
     }
 
+    
+    /** 
+     * This displays the menu to the user, creating the appropriate Model and Strategy
+     * objects as specified in the user input.
+     * @return Model - An instance of the CA Model with a user-selected Strategy
+     * @throws IOException
+     */
     // TODO: separate the menu display from Model and Strategy object creation
     public static Model displayMenu() throws IOException {
         String answer;

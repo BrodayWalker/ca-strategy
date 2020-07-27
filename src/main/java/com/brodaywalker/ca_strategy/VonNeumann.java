@@ -3,6 +3,12 @@ package com.brodaywalker.ca_strategy;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * The VonNeumann class implements the Strategy interace for use
+ * with a Model object's 2D grid of cells. This strategy surveys
+ * a cell's von Neumann neighborhood, which include the cell directly
+ * above, to the left, to the right, and below the cell being processed.
+ */
 class VonNeumann implements Strategy {
     private int daysLatent, daysInfectious;
     private double chanceInfected;
