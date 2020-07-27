@@ -58,6 +58,15 @@
         <plugin>
           <artifactId>maven-jar-plugin</artifactId>
           <version>3.0.2</version>
+          <!-- Added to give main class -->
+          <configuration>
+            <archive>
+              <manifest>
+                <mainClass>com.brodaywalker.ca_strategy.Main</mainClass>
+              </manifest>
+            </archive>
+          </configuration>
+          <!-- End of addition -->
         </plugin>
         <plugin>
           <artifactId>maven-install-plugin</artifactId>
